@@ -22,3 +22,5 @@ compile 'com.core:audiomanager:0.0.1'
 #### 使用方法
 
 见demo
+
+![](images/audio.jpg)
