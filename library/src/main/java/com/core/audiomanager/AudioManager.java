@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.MainThread;
 import android.text.TextUtils;
 
 import com.core.audiomanager.callback.AudioPlayStateListener;
@@ -19,9 +20,11 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
+ * 在主线程中操作
  * 音频播放&录制管理类
  * Created by wangzhen on 2018/9/18.
  */
+@MainThread
 public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallback.IPlayCallback {
 
     private static final int MSG_ERROR = 0x1;
@@ -87,6 +90,24 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
             }
         }
         return 1;
+    }
+
+    /**
+     * 获取当前播放对象，用于获取当前播放进度和总时长等信息
+     *
+     * @return
+     */
+    public MediaPlayer getMPlayer() {
+        return mMediaPlayer = mMediaPlayer == null ? null : mMediaPlayer;
+    }
+
+    /**
+     * 获取当前录音对象，用户获取录音相关信息
+     *
+     * @return
+     */
+    public MediaRecorder getMRecorder() {
+        return mMediaRecorder = mMediaRecorder == null ? null : mMediaRecorder;
     }
 
     @Override

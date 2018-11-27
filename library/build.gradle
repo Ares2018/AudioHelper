@@ -6,7 +6,7 @@ apply from: 'http://10.100.62.98:8086/nexus/service/local/artifact/maven/redirec
 android {
     compileSdkVersion 28
     defaultConfig {
-        minSdkVersion 1
+        minSdkVersion 17
         targetSdkVersion 28
         versionCode 2
         versionName "0.0.2"
