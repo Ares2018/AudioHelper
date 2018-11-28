@@ -21,6 +21,6 @@ compile 'com.core:audiomanager:0.0.1'
 
 #### 使用方法
 
-见demo
+见demo，需要自己处理录音权限的申请
 
 ![](images/audio.jpg)

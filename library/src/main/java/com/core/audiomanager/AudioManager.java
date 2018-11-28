@@ -97,8 +97,8 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
      *
      * @return
      */
-    public MediaPlayer getMPlayer() {
-        return mMediaPlayer = mMediaPlayer == null ? null : mMediaPlayer;
+    public MediaPlayer getPlayer() {
+        return mMediaPlayer;
     }
 
     /**
@@ -106,8 +106,8 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
      *
      * @return
      */
-    public MediaRecorder getMRecorder() {
-        return mMediaRecorder = mMediaRecorder == null ? null : mMediaRecorder;
+    public MediaRecorder getRecorder() {
+        return mMediaRecorder;
     }
 
     @Override
