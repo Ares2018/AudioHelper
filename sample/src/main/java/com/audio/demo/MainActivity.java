@@ -5,13 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.core.audiomanager.AudioManager;
+import com.core.audiomanager.AudioHelper;
 import com.core.audiomanager.callback.AudioPlayStateListener;
 import com.core.audiomanager.callback.AudioRecordStateListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private AudioManager audioManager;
+    private AudioHelper audioHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initAudio() {
-        audioManager = AudioManager.get(this);
-        audioManager.setPlayStateListener(new AudioPlayStateListener() {
+        audioHelper = AudioHelper.create(this);
+        audioHelper.setPlayStateListener(new AudioPlayStateListener() {
             @Override
             public void onPrepared() {
                 Toast.makeText(MainActivity.this, "开始播放", Toast.LENGTH_SHORT).show();
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, "播放出错 --> " + error, Toast.LENGTH_SHORT).show();
             }
         });
-        audioManager.setRecordStateListener(new AudioRecordStateListener() {
+        audioHelper.setRecordStateListener(new AudioRecordStateListener() {
             @Override
             public void onPrepared() {
 
@@ -69,22 +69,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_play:
                 String path = "http://10.100.119.192:8080/wangzhen/audio/hby.mp3";
-                audioManager.startPlay(path);
+                audioHelper.startPlay(path);
                 break;
             case R.id.btn_pause:
-                audioManager.pausePlay();
+                audioHelper.pausePlay();
                 break;
             case R.id.btn_resume:
-                audioManager.resumePlay();
+                audioHelper.resumePlay();
                 break;
             case R.id.btn_stop:
-                audioManager.stopPlay();
+                audioHelper.stopPlay();
                 break;
             case R.id.btn_record:
-                audioManager.startRecord();
+                audioHelper.startRecord();
                 break;
             case R.id.btn_record_stop:
-                audioManager.stopRecord();
+                audioHelper.stopRecord();
                 break;
         }
     }
@@ -92,8 +92,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (audioManager != null) {
-            audioManager.onDestroy();
+        if (audioHelper != null) {
+            audioHelper.onDestroy();
         }
     }
 }

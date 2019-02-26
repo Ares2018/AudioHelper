@@ -1,4 +1,4 @@
-# AudioManager
+# AudioHelper
 > 音频播放&录制管理类
 
 #### 添加依赖
@@ -14,9 +14,9 @@ allprojects {
 }
 ```
 
-2、项目工程build.gradle添加依赖 (点击查看[最新版本](http://10.100.62.98:8086/nexus/#nexus-search;gav~com.core~audiomanager~~~))
+2、项目工程build.gradle添加依赖 (点击查看[最新版本](http://10.100.62.98:8086/nexus/#nexus-search;gav~cn.daily.android~audiohelper~~~))
 ``` gradle
-compile 'com.core:audiomanager:0.0.1'
+compile 'cn.daily.android:audiohelper:1.0.0'
 ```
 
 #### 使用方法

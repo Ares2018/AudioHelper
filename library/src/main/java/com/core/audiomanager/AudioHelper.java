@@ -1,6 +1,7 @@
 package com.core.audiomanager;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Handler;
@@ -9,9 +10,9 @@ import android.os.Message;
 import android.support.annotation.MainThread;
 import android.text.TextUtils;
 
+import com.core.audiomanager.callback.AudioCallback;
 import com.core.audiomanager.callback.AudioPlayStateListener;
 import com.core.audiomanager.callback.AudioRecordStateListener;
-import com.core.audiomanager.callback.IAudioCallback;
 import com.core.audiomanager.util.PathUtil;
 
 import java.io.File;
@@ -25,13 +26,13 @@ import java.util.Locale;
  * Created by wangzhen on 2018/9/18.
  */
 @MainThread
-public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallback.IPlayCallback {
+public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallback.PlayerCallback {
 
     private static final int MSG_ERROR = 0x1;
     private static final int MSG_COMPLETE = 0x2;
     private static final int MSG_PREPARED = 0x3;
 
-    private static AudioManager mInstance;
+    private static AudioHelper mInstance;
     private Context context;
     private MediaPlayer mMediaPlayer;
     private MediaRecorder mMediaRecorder;
@@ -47,12 +48,13 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
     private int mCurrPlayPosition;
     //音频url
     private String mAudioUrl;
+    private AudioFocusChangeCallback focusChangeCallback;
 
-    public static AudioManager get(Context context) {
+    public static AudioHelper create(Context context) {
         if (mInstance == null) {
-            synchronized (AudioManager.class) {
+            synchronized (AudioHelper.class) {
                 if (mInstance == null) {
-                    mInstance = new AudioManager(context);
+                    mInstance = new AudioHelper(context);
                 }
             }
         }
@@ -60,7 +62,7 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
         return mInstance;
     }
 
-    private AudioManager(Context ctx) {
+    private AudioHelper(Context ctx) {
         if (ctx == null)
             throw new NullPointerException("Context不能为null");
         context = ctx.getApplicationContext();
@@ -255,7 +257,7 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    AudioManager.this.onMainPrepared();
+                    AudioHelper.this.onMainPrepared();
                     mMediaPlayer.start();
                     obtainFocus();
                 }
@@ -334,18 +336,31 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
         this.mPlayStateListener = listener;
     }
 
+    /**
+     * 获取系统音频焦点
+     */
     private void obtainFocus() {
         android.media.AudioManager am = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (am != null)
-            am.requestAudioFocus(null, android.media.AudioManager.STREAM_MUSIC, android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+        if (am != null) {
+            focusChangeCallback = new AudioFocusChangeCallback();
+            am.requestAudioFocus(focusChangeCallback, android.media.AudioManager.STREAM_MUSIC, android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+        }
     }
 
+    /**
+     * 释放系统音频焦点
+     */
     private void releaseFocus() {
         android.media.AudioManager am = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (am != null)
-            am.abandonAudioFocus(null);
+            am.abandonAudioFocus(focusChangeCallback);
     }
 
+    /**
+     * 主线程错误回调
+     *
+     * @param error error
+     */
     private void onMainError(String error) {
         Message message = Message.obtain();
         message.what = MSG_ERROR;
@@ -353,12 +368,18 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
         mainHandler.sendMessage(message);
     }
 
+    /**
+     * 准备完毕主线程回调
+     */
     private void onMainPrepared() {
         Message message = Message.obtain();
         message.what = MSG_PREPARED;
         mainHandler.sendMessage(message);
     }
 
+    /**
+     * 播放完毕主线程回调
+     */
     private void onMainComplete() {
         Message message = Message.obtain();
         message.what = MSG_COMPLETE;
@@ -388,4 +409,31 @@ public class AudioManager implements IAudioCallback.IRecordCallback, IAudioCallb
             }
         }
     };
+
+    /**
+     * 系统音频焦点监听
+     * Created by wangzhen on 2019/2/26.
+     */
+    public class AudioFocusChangeCallback implements AudioManager.OnAudioFocusChangeListener {
+
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            switch (focusChange) {
+                // 音频焦点
+                case AudioManager.AUDIOFOCUS_LOSS: // 其他App请求焦点，未知时长
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: // 其他App请求焦点，临时的
+                    onMainComplete();
+                    stopPlay();
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: // 其他App请求焦点，临时的，可降低音量不用停止
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN: // 其他App放弃未知时长焦点
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT: // 其他App放弃临时焦点
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK: // 其他App放弃临时焦点
+                    break;
+            }
+        }
+    }
 }

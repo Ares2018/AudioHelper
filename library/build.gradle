@@ -1,15 +1,13 @@
 import java.util.concurrent.TimeUnit
 
 apply plugin: 'com.android.library'
-apply from: 'http://10.100.62.98:8086/nexus/service/local/artifact/maven/redirect?r=releases&g=cn.daily.android&a=publish&e=gradle&v=0.0.4'
+apply from: 'http://10.100.62.98:8086/nexus/service/local/artifact/maven/redirect?r=releases&g=cn.daily.android&a=publish&e=gradle&v=0.0.8'
 
 android {
     compileSdkVersion 28
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 28
-        versionCode 2
-        versionName "0.0.2"
 
         lintOptions {
             abortOnError false
@@ -37,5 +35,5 @@ configurations.all {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    compileOnly 'com.android.support:appcompat-v7:28.0.0'
 }

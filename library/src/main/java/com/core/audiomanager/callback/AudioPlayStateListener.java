@@ -18,7 +18,7 @@ public interface AudioPlayStateListener {
     /**
      * 播放出错
      *
-     * @param error
+     * @param error error
      */
     void onError(String error);
 }
