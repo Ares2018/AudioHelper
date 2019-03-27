@@ -7,7 +7,6 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.MainThread;
 import android.text.TextUtils;
 
 import com.core.audiomanager.callback.AudioCallback;
@@ -25,7 +24,6 @@ import java.util.Locale;
  * 音频播放&录制管理类
  * Created by wangzhen on 2018/9/18.
  */
-@MainThread
 public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallback.PlayerCallback {
 
     private static final int MSG_ERROR = 0x1;
