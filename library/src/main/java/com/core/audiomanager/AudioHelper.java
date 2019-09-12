@@ -46,6 +46,8 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
     private int mCurrPlayPosition;
     //音频url
     private String mAudioUrl;
+    //是否循环播放
+    private boolean isLooping;
     private AudioFocusChangeCallback focusChangeCallback;
 
     public static AudioHelper create(Context context) {
@@ -260,6 +262,7 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
                     obtainFocus();
                 }
             });
+            mMediaPlayer.setLooping(isLooping);
             mMediaPlayer.prepareAsync();
         } catch (Exception e) {
             onMainError(e.getMessage());
@@ -324,6 +327,10 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
      */
     public String getAudioUrl() {
         return mAudioUrl;
+    }
+
+    public void setLooping(boolean looping) {
+        isLooping = looping;
     }
 
     public void setRecordStateListener(AudioRecordStateListener listener) {
