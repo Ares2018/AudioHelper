@@ -257,9 +257,13 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    AudioHelper.this.onMainPrepared();
-                    mMediaPlayer.start();
-                    obtainFocus();
+                    if (mMediaPlayer != null) {
+                        onMainPrepared();
+                        mMediaPlayer.start();
+                        obtainFocus();
+                    } else {
+                        onMainError("播放失败");
+                    }
                 }
             });
             mMediaPlayer.setLooping(isLooping);
