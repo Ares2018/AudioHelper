@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -29,6 +30,7 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
     private static final int MSG_ERROR = 0x1;
     private static final int MSG_COMPLETE = 0x2;
     private static final int MSG_PREPARED = 0x3;
+    private static final int MSG_UPDATE_TIME = 0x4;
 
     private static AudioHelper mInstance;
     private Context context;
@@ -49,6 +51,10 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
     //是否循环播放
     private boolean isLooping;
     private AudioFocusChangeCallback focusChangeCallback;
+    //开始区间时间
+    private long mRangeStartTime;
+    //结束区间时间
+    private long mRangeEndTime;
 
     public static AudioHelper create(Context context) {
         if (mInstance == null) {
@@ -238,13 +244,19 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
         mCurrPlayPosition = 0;
 
         try {
-            mMediaPlayer.setAudioStreamType(android.media.AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setDataSource(mAudioUrl);
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    onMainComplete();
-                    stopPlay();
+                    if (mMediaPlayer != null) {
+                        if (mRangeStartTime > 0 && mRangeEndTime > 0 && mRangeEndTime > mRangeStartTime) {
+                            rangePlay(mRangeStartTime, mRangeEndTime);
+                        } else {
+                            onMainComplete();
+                            stopPlay();
+                        }
+                    }
                 }
             });
             mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -295,6 +307,8 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
 
     @Override
     public void stopPlay() {
+        mRangeStartTime = 0;
+        mRangeEndTime = 0;
         if (mMediaPlayer != null) {
             try {
                 releaseFocus();
@@ -333,6 +347,11 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
         return mAudioUrl;
     }
 
+    /**
+     * 设置循环模式
+     *
+     * @param looping true / false
+     */
     public void setLooping(boolean looping) {
         isLooping = looping;
     }
@@ -415,9 +434,46 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
                         mPlayStateListener.onPrepared();
                     }
                     break;
+                case MSG_UPDATE_TIME:
+                    if (mMediaPlayer != null && mRangeEndTime > 0) {
+                        int currentPosition = mMediaPlayer.getCurrentPosition();
+                        if (currentPosition >= mRangeEndTime) {
+                            rangePlay(mRangeStartTime, mRangeEndTime);
+                        } else {
+                            sendEmptyMessageDelayed(MSG_UPDATE_TIME, 1000);
+                        }
+                    }
+                    break;
             }
         }
     };
+
+    /**
+     * 指定区间并播放
+     *
+     * @param leftTime  start
+     * @param rightTime end
+     */
+    public void rangePlay(long leftTime, long rightTime) {
+        mRangeStartTime = leftTime;
+        mRangeEndTime = rightTime;
+        if (mMediaPlayer != null) {
+            if (mRangeStartTime < 0) {
+                mRangeStartTime = 0;
+            }
+            if (mRangeEndTime > mMediaPlayer.getDuration()) {
+                mRangeEndTime = mMediaPlayer.getDuration();
+            }
+            if (Build.VERSION.SDK_INT < 26) {
+                mMediaPlayer.seekTo((int) leftTime);
+            } else {
+                mMediaPlayer.seekTo(leftTime, MediaPlayer.SEEK_CLOSEST_SYNC);
+            }
+            mMediaPlayer.start();
+            //开始计时
+            mainHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, 1000);
+        }
+    }
 
     /**
      * 系统音频焦点监听

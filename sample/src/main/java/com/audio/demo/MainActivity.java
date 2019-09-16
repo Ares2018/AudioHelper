@@ -8,10 +8,12 @@ import android.widget.Toast;
 import com.core.audiomanager.AudioHelper;
 import com.core.audiomanager.callback.AudioPlayStateListener;
 import com.core.audiomanager.callback.AudioRecordStateListener;
+import com.core.audiomanager.widget.RangeSlider;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, RangeSlider.OnRangeChangeListener {
 
-    private AudioHelper audioHelper;
+    private AudioHelper mAudioHelper;
+    private RangeSlider mRangeSlider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,11 +28,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_stop).setOnClickListener(this);
         findViewById(R.id.btn_record).setOnClickListener(this);
         findViewById(R.id.btn_record_stop).setOnClickListener(this);
+
+        mRangeSlider = findViewById(R.id.bgm_range_slider);
+        mRangeSlider.setRangeChangeListener(this);
     }
 
     private void initAudio() {
-        audioHelper = AudioHelper.create(this);
-        audioHelper.setPlayStateListener(new AudioPlayStateListener() {
+        mAudioHelper = AudioHelper.create(this);
+        mAudioHelper.setPlayStateListener(new AudioPlayStateListener() {
             @Override
             public void onPrepared() {
                 Toast.makeText(MainActivity.this, "开始播放", Toast.LENGTH_SHORT).show();
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, "播放出错 --> " + error, Toast.LENGTH_SHORT).show();
             }
         });
-        audioHelper.setRecordStateListener(new AudioRecordStateListener() {
+        mAudioHelper.setRecordStateListener(new AudioRecordStateListener() {
             @Override
             public void onPrepared() {
 
@@ -69,22 +74,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_play:
                 String path = "http://10.100.119.192:8080/wangzhen/audio/hby.mp3";
-                audioHelper.startPlay(path);
+                mAudioHelper.startPlay(path);
                 break;
             case R.id.btn_pause:
-                audioHelper.pausePlay();
+                mAudioHelper.pausePlay();
                 break;
             case R.id.btn_resume:
-                audioHelper.resumePlay();
+                mAudioHelper.resumePlay();
                 break;
             case R.id.btn_stop:
-                audioHelper.stopPlay();
+                mAudioHelper.stopPlay();
                 break;
             case R.id.btn_record:
-                audioHelper.startRecord();
+                mAudioHelper.startRecord();
                 break;
             case R.id.btn_record_stop:
-                audioHelper.stopRecord();
+                mAudioHelper.stopRecord();
                 break;
         }
     }
@@ -92,8 +97,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (audioHelper != null) {
-            audioHelper.onDestroy();
+        if (mAudioHelper != null) {
+            mAudioHelper.onDestroy();
+        }
+    }
+
+    @Override
+    public void onKeyDown(int type) {
+
+    }
+
+    @Override
+    public void onKeyUp(int type, int leftPinIndex, int rightPinIndex) {
+        if (mAudioHelper != null && mAudioHelper.getPlayer() != null) {
+            long duration = mAudioHelper.getPlayer().getDuration();
+            long leftTime = duration * leftPinIndex / 100;
+            long rightTime = duration * rightPinIndex / 100;
+            mAudioHelper.rangePlay(leftTime, rightTime);
         }
     }
 }

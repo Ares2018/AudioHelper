@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -55,5 +56,19 @@
             android:layout_height="wrap_content"
             android:text="停止" />
     </LinearLayout>
+
+    <com.core.audiomanager.widget.RangeSlider
+        android:id="@+id/bgm_range_slider"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:background="#99ff"
+        app:leftThumbDrawable="@mipmap/ic_progress_left"
+        app:leftThumbIndex="0"
+        app:lineColor="#ff36a3bc"
+        app:lineHeight="3dp"
+        app:maskColor="#ffffffff"
+        app:rightThumbDrawable="@mipmap/ic_progress_right"
+        app:thumbWidth="9dp"
+        app:tickCount="100" />
 
 </LinearLayout>
