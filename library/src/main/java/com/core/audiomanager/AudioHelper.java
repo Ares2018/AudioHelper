@@ -327,6 +327,8 @@ public class AudioHelper implements AudioCallback.RecorderCallback, AudioCallbac
     public void onDestroy() {
         stopRecord();
         stopPlay();
+        mRecordStateListener = null;
+        mPlayStateListener = null;
     }
 
     /**
